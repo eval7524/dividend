@@ -31,13 +31,13 @@ public class FinanceService {
     public ScrapedResult getdividendByCompanyName(String companyName) {
         log.info("search Company -> {}", companyName);
         // 1. 회사명 기준 회사 정보 조회
-        var OptionalCompany = this.companyRepository.findByName(companyName);
-        if(OptionalCompany.isEmpty()) {
+        var optionalCompany = this.companyRepository.findByName(companyName);
+        if(optionalCompany.isEmpty()) {
             log.warn("회사 조회 실패 : {}", companyName);
             throw new NoCompanyException();
         }
 
-        CompanyEntity company = OptionalCompany.get();
+        CompanyEntity company = optionalCompany.get();
         // 2. 조회된 회사 ID로 배당금 정보 조회
         List<DividendEntity> dividendEntities = this.dividendRepository.findAllByCompanyId(company.getId());
 

@@ -12,8 +12,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.Trie;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -78,29 +81,31 @@ public class CompanyService {
                 .collect(Collectors.toList());
     }
 
-    public void deleteAutoCompleteKeyword(String keyword) {
+    void deleteAutoCompleteKeyword(String keyword) {
         log.debug("AutoComplete 키워드 삭제 : {}", keyword);
         this.trie.remove(keyword);
     }
 
+
     public List<String> getCompanyNamesByKeyword(String keyword) {
         log.debug("회사 조회 요청, keyword={}", keyword);
-        Pageable limit = Pageable.ofSize(10);
+        Pageable limit = PageRequest.of(0,10, Sort.by("name").ascending());
         Page<CompanyEntity> companyEntities = this.companyRepository.findByNameStartingWithIgnoreCase(keyword, limit);
         log.debug("조회 완료, 반환 회사 수={}", companyEntities.getNumberOfElements());
         return companyEntities.stream()
-                .map(e -> e.getName())
+                .map(CompanyEntity::getName)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public String deleteCompany(String ticker) {
         log.info("삭제 진행 중 : {}", ticker);
-        var OptionalCompany = this.companyRepository.findByTicker(ticker);
-        if (OptionalCompany.isEmpty()) {
+        var optionalCompany = this.companyRepository.findByTicker(ticker);
+        if (optionalCompany.isEmpty()) {
             log.warn("삭제 실패, 존재하지 않는 Ticker : {}", ticker);
             throw new NoCompanyException();
         }
-        var company = OptionalCompany.get();
+        var company = optionalCompany.get();
 
         this.dividendRepository.deleteAllByCompanyId(company.getId());
         this.companyRepository.delete(company);

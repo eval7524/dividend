@@ -2,7 +2,8 @@ package com.example.dividend.exception;
 
 public abstract class AbstractException extends RuntimeException {
 
-    abstract public int getStatusCode();
+    public abstract int getStatusCode();
 
+    @Override
     abstract public String getMessage();
 }

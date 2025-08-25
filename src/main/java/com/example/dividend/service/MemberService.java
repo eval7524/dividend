@@ -46,12 +46,12 @@ public class MemberService implements UserDetailsService {
     }
 
     public MemberEntity authenticate(Auth.SignIn member) {
-        var OptionalUser = this.memberRepository.findByUsername(member.getUsername());
-        if (OptionalUser.isEmpty()) {
+        var optionalUser = this.memberRepository.findByUsername(member.getUsername());
+        if (optionalUser.isEmpty()) {
             log.warn("회원 인증 실패 , 존재하지 않는 ID 입니다. ID : {}", member.getUsername());
             throw new UsernameNotFoundException("유저를 찾을 수 없습니다. : " + member.getUsername());
         }
-        var user = OptionalUser.get();
+        var user = optionalUser.get();
 
         if (!this.passwordEncoder.matches(member.getPassword(), user.getPassword())) {
             log.warn("회원 인증 실패 , 비밀번호가 일치하지 않습니다.");

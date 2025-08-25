@@ -51,7 +51,15 @@ public class YahooFinanceScraper implements Scraper{
             }
             Element tableElement = parsingDivs.get(0);
 
-            Element tbody = tableElement.children().get(1);
+            Elements children = tableElement.children();
+            //Jsoup Element.children()은 Elements 객체를 반환하며, null을 반환하지 않음 -> 자식이 없으면 그냥 빈 Elements를 줌 -> 널 체크는 불필요 하다고 함
+            if(children.size() < 2) {
+                //get(1)은 두번째 요소를 가져오기에 children.size() >= 2가 되어야 안전하다 -> children.size() < 2 인 경우 는 경고 로그를 남기고 빈 결과 반환
+                log.warn("회사 [{}] 배당금 테이블 구조가 예상과 다릅니다. Children Size = {}", company.getName(), (children == null ? "null" : children.size()));
+                return scrapResult;
+            }
+            Element tbody = children.get(1);
+
             List<Dividend> dividends = new ArrayList<>();
             for (Element e : tbody.children()) {
                 String txt = e.text();
